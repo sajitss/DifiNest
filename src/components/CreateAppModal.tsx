@@ -34,6 +34,7 @@ export const CreateAppModal: React.FC<CreateAppModalProps> = ({
   
   // App Form State
   const [name, setName] = useState(initialApp?.name || '');
+  const [slug, setSlug] = useState(initialApp?.slug || (initialApp?.name ? initialApp.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') : ''));
   const [category, setCategory] = useState<string>(initialApp?.category || categories[1]?.id || 'ui-components');
   const [description, setDescription] = useState(initialApp?.description || '');
   const [tags, setTags] = useState<string>(initialApp?.tags ? initialApp.tags.join(', ') : 'custom, web-app');
@@ -113,6 +114,7 @@ export const CreateAppModal: React.FC<CreateAppModalProps> = ({
     const saved = StorageService.saveApp({
       id: initialApp?.id,
       name: name.trim(),
+      slug: slug.trim() || undefined,
       category,
       description: description.trim() || 'Custom private web application.',
       tags: tagList.length ? tagList : ['web-app'],
@@ -167,7 +169,6 @@ export const CreateAppModal: React.FC<CreateAppModalProps> = ({
 
         {/* Form Body */}
         <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-6">
-          {/* Metadata Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-semibold text-gray-300 mb-1">
@@ -176,56 +177,74 @@ export const CreateAppModal: React.FC<CreateAppModalProps> = ({
               <input
                 type="text"
                 value={name}
-                onChange={e => setName(e.target.value)}
-                placeholder="e.g. Interactive 3D Audio Visualizer"
+                onChange={e => {
+                  setName(e.target.value);
+                  if (!slug || slug === name.toLowerCase().replace(/[^a-z0-9]+/g, '-')) {
+                    setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''));
+                  }
+                }}
+                placeholder="e.g. Daily Weather"
                 required
                 className="w-full bg-gray-950 border border-gray-800 rounded-lg p-2.5 text-sm text-white focus:border-blue-500 outline-none"
               />
             </div>
 
             <div>
-              <div className="flex items-center justify-between mb-1">
-                <label className="text-xs font-semibold text-gray-300">Category</label>
+              <label className="block text-xs font-semibold text-gray-300 mb-1">
+                Custom URL Slug (e.g. <span className="text-blue-400">/dailyweather</span>)
+              </label>
+              <input
+                type="text"
+                value={slug}
+                onChange={e => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
+                placeholder="e.g. dailyweather"
+                className="w-full bg-gray-950 border border-gray-800 rounded-lg p-2.5 text-sm text-white focus:border-blue-500 outline-none font-mono"
+              />
+            </div>
+          </div>
+
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <label className="text-xs font-semibold text-gray-300">Category</label>
+              <button
+                type="button"
+                onClick={() => setIsAddingCategory(!isAddingCategory)}
+                className="text-[11px] text-blue-400 hover:underline flex items-center gap-0.5"
+              >
+                <Plus size={12} /> Add Custom
+              </button>
+            </div>
+
+            {!isAddingCategory ? (
+              <select
+                value={category}
+                onChange={e => setCategory(e.target.value)}
+                className="w-full bg-gray-950 border border-gray-800 rounded-lg p-2.5 text-sm text-white focus:border-blue-500 outline-none"
+              >
+                {categories.filter(c => c.id !== 'all').map(cat => (
+                  <option key={cat.id} value={cat.id}>
+                    {cat.name}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={newCategoryName}
+                  onChange={e => setNewCategoryName(e.target.value)}
+                  placeholder="New category name..."
+                  className="flex-1 bg-gray-950 border border-blue-500/80 rounded-lg px-3 py-2 text-xs text-white outline-none"
+                />
                 <button
                   type="button"
-                  onClick={() => setIsAddingCategory(!isAddingCategory)}
-                  className="text-[11px] text-blue-400 hover:underline flex items-center gap-0.5"
+                  onClick={handleCreateCategory}
+                  className="px-3 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-semibold"
                 >
-                  <Plus size={12} /> Add Custom
+                  Save
                 </button>
               </div>
-
-              {!isAddingCategory ? (
-                <select
-                  value={category}
-                  onChange={e => setCategory(e.target.value)}
-                  className="w-full bg-gray-950 border border-gray-800 rounded-lg p-2.5 text-sm text-white focus:border-blue-500 outline-none"
-                >
-                  {categories.filter(c => c.id !== 'all').map(cat => (
-                    <option key={cat.id} value={cat.id}>
-                      {cat.name}
-                    </option>
-                  ))}
-                </select>
-              ) : (
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={newCategoryName}
-                    onChange={e => setNewCategoryName(e.target.value)}
-                    placeholder="New category name..."
-                    className="flex-1 bg-gray-950 border border-blue-500/80 rounded-lg px-3 py-2 text-xs text-white outline-none"
-                  />
-                  <button
-                    type="button"
-                    onClick={handleCreateCategory}
-                    className="px-3 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-semibold"
-                  >
-                    Save
-                  </button>
-                </div>
-              )}
-            </div>
+            )}
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

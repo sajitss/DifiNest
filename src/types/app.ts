@@ -10,6 +10,7 @@ export interface Category {
 
 export interface WebApp {
   id: string;
+  slug?: string;
   name: string;
   description: string;
   category: CategoryId;

@@ -18,7 +18,8 @@ import {
   Edit,
   Maximize2,
   Minimize2,
-  Layers
+  Layers,
+  Share2
 } from 'lucide-react';
 
 interface PlayroomModalProps {
@@ -69,6 +70,7 @@ export const PlayroomModal: React.FC<PlayroomModalProps> = ({
     const updated = StorageService.saveApp({
       id: app.id,
       name: app.name,
+      slug: app.slug,
       description: app.description,
       category: app.category,
       tags: app.tags,
@@ -95,6 +97,7 @@ export const PlayroomModal: React.FC<PlayroomModalProps> = ({
     const updated = StorageService.saveApp({
       id: app.id,
       name: editName,
+      slug: app.slug,
       description: editDesc,
       category: editCategory,
       tags: editTags.split(',').map(t => t.trim()).filter(Boolean),
@@ -274,6 +277,21 @@ export const PlayroomModal: React.FC<PlayroomModalProps> = ({
               </button>
             </>
           )}
+
+          {/* Copy Share URL Link button */}
+          <button
+            onClick={() => {
+              const slug = app.slug || app.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || app.id;
+              const shareUrl = `${window.location.origin}/${slug}`;
+              navigator.clipboard.writeText(shareUrl);
+              alert(`Direct URL copied to clipboard:\n${shareUrl}`);
+            }}
+            className={`px-2 py-1 ${theme === 'light' ? 'bg-slate-200 hover:bg-slate-300 text-slate-700' : 'bg-gray-800 hover:bg-gray-700 text-gray-300'} rounded-lg text-xs font-medium transition-colors flex items-center gap-1`}
+            title="Copy Direct Shareable URL Link"
+          >
+            <Share2 size={12} />
+            <span className="hidden sm:inline">Share Link</span>
+          </button>
 
           {/* Close Header Button */}
           <button

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import type { WebApp, Category, AppFilter } from './types/app';
 import { StorageService } from './services/storageService';
 import { Navbar } from './components/Navbar';
@@ -29,14 +29,28 @@ export default function App() {
     sortBy: 'recent'
   });
 
-  // Load initial data
-  const loadData = () => {
+  // Load initial data and resolve URL route
+  const checkUrlRoute = useCallback(() => {
+    const path = window.location.pathname.replace(/^\/+|\/+$/g, '').trim();
+    if (path) {
+      const matched = StorageService.getAppBySlugOrId(path);
+      if (matched) {
+        StorageService.incrementViewCount(matched.id);
+        setActivePlayroomApp(matched);
+      }
+    }
+  }, []);
+
+  const loadData = useCallback(() => {
     setCategories(StorageService.getCategories());
-    setApps(StorageService.getApps());
-  };
+    const allApps = StorageService.getApps();
+    setApps(allApps);
+  }, []);
 
   useEffect(() => {
     loadData();
+    checkUrlRoute();
+
     // Check if user previously saved a theme preference
     const savedTheme = localStorage.getItem('difinest_theme') as 'dark' | 'light';
     if (savedTheme) {
@@ -44,7 +58,25 @@ export default function App() {
       document.documentElement.classList.toggle('light-theme', savedTheme === 'light');
       document.documentElement.classList.toggle('dark', savedTheme === 'dark');
     }
-  }, []);
+
+    // Handle browser back/forward buttons
+    const handlePopState = () => {
+      const path = window.location.pathname.replace(/^\/+|\/+$/g, '').trim();
+      if (path) {
+        const matched = StorageService.getAppBySlugOrId(path);
+        if (matched) {
+          setActivePlayroomApp(matched);
+        } else {
+          setActivePlayroomApp(null);
+        }
+      } else {
+        setActivePlayroomApp(null);
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [loadData, checkUrlRoute]);
 
   // Compute counts per category
   const appCountsByCategory = useMemo(() => {
@@ -67,6 +99,7 @@ export default function App() {
       const q = filter.searchQuery.toLowerCase();
       result = result.filter(a => 
         a.name.toLowerCase().includes(q) ||
+        (a.slug && a.slug.toLowerCase().includes(q)) ||
         a.description.toLowerCase().includes(q) ||
         a.author.toLowerCase().includes(q) ||
         a.tags.some(t => t.toLowerCase().includes(q))
@@ -99,7 +132,15 @@ export default function App() {
   const handleRunApp = (app: WebApp) => {
     StorageService.incrementViewCount(app.id);
     setActivePlayroomApp(app);
+    // Update browser URL so direct link can be copied or shared
+    const appSlug = app.slug || app.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || app.id;
+    window.history.pushState({ appId: app.id }, '', `/${appSlug}`);
     loadData();
+  };
+
+  const handleClosePlayroom = () => {
+    setActivePlayroomApp(null);
+    window.history.pushState({}, '', '/');
   };
 
   const handleEditApp = (app: WebApp) => {
@@ -119,7 +160,7 @@ export default function App() {
     const forked = StorageService.duplicateApp(id);
     if (forked) {
       loadData();
-      setActivePlayroomApp(forked);
+      handleRunApp(forked);
     }
   };
 
@@ -234,14 +275,14 @@ export default function App() {
           categories={categories}
           isAdmin={isAdmin}
           theme={theme}
-          onClose={() => setActivePlayroomApp(null)}
+          onClose={handleClosePlayroom}
           onAppUpdated={updated => {
             setActivePlayroomApp(updated);
             loadData();
           }}
           onAppDeleted={id => {
             handleDeleteApp(id);
-            setActivePlayroomApp(null);
+            handleClosePlayroom();
           }}
         />
       )}

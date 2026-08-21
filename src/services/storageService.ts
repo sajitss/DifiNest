@@ -60,11 +60,12 @@ export class StorageService {
       apps = apps.filter(app => app.category === filter.category);
     }
 
-    // Search query filter (matches title, description, tags, author, category)
+    // Search query filter (matches title, description, tags, author, category, slug)
     if (filter.searchQuery.trim()) {
       const query = filter.searchQuery.toLowerCase().trim();
       apps = apps.filter(app => 
         app.name.toLowerCase().includes(query) ||
+        (app.slug && app.slug.toLowerCase().includes(query)) ||
         app.description.toLowerCase().includes(query) ||
         app.author.toLowerCase().includes(query) ||
         app.tags.some(tag => tag.toLowerCase().includes(query)) ||
@@ -95,6 +96,27 @@ export class StorageService {
     return apps.find(app => app.id === id);
   }
 
+  public static getAppBySlugOrId(identifier: string): WebApp | undefined {
+    if (!identifier) return undefined;
+    const clean = identifier.toLowerCase().replace(/^\/+|\/+$/g, '').trim();
+    const apps = this.getApps();
+
+    return apps.find(app => {
+      if (app.slug && app.slug.toLowerCase() === clean) return true;
+      if (app.id && app.id.toLowerCase() === clean) return true;
+      
+      // Also match normalized name (e.g. "dailyweather" matching "Daily Weather")
+      const nameSlug = app.name.toLowerCase().replace(/[^a-z0-9]/g, '');
+      const cleanNoHyphen = clean.replace(/[^a-z0-9]/g, '');
+      if (nameSlug && cleanNoHyphen && nameSlug === cleanNoHyphen) return true;
+
+      const nameHyphenated = app.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+      if (nameHyphenated === clean) return true;
+
+      return false;
+    });
+  }
+
   public static incrementViewCount(id: string): void {
     const apps = this.getApps();
     const app = apps.find(a => a.id === id);
@@ -108,6 +130,12 @@ export class StorageService {
     const apps = this.getApps();
     const now = new Date().toISOString();
 
+    // Generate clean slug if not specified or format it
+    let slug = appData.slug ? appData.slug.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-') : undefined;
+    if (!slug) {
+      slug = appData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    }
+
     if (appData.id) {
       // Updating existing app
       const index = apps.findIndex(a => a.id === appData.id);
@@ -115,6 +143,7 @@ export class StorageService {
         const updatedApp: WebApp = {
           ...apps[index],
           ...appData,
+          slug,
           id: appData.id,
           updatedAt: now
         };
@@ -128,6 +157,7 @@ export class StorageService {
     const newId = 'app-' + Date.now().toString(36) + '-' + Math.random().toString(36).substring(2, 6);
     const newApp: WebApp = {
       ...appData,
+      slug,
       id: newId,
       createdAt: now,
       updatedAt: now,
@@ -145,6 +175,7 @@ export class StorageService {
 
     const copyData = {
       name: `${original.name} (Copy)`,
+      slug: `${original.slug || original.id}-copy`,
       description: original.description,
       category: original.category,
       tags: [...original.tags, 'cloned'],

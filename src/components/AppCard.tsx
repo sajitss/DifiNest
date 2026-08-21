@@ -9,7 +9,8 @@ import {
   Trash2,
   Edit,
   User,
-  Sparkles
+  Sparkles,
+  Share2
 } from 'lucide-react';
 import { ZipService } from '../services/zipService';
 
@@ -133,7 +134,7 @@ export const AppCard: React.FC<AppCardProps> = ({
             <span title="Views">{app.viewCount || 0} views</span>
           </div>
 
-          {/* Card Quick Actions: ONLY ADMIN sees Code, Download, Fork, Edit, Delete */}
+          {/* Card Quick Actions */}
           <div className="flex items-center gap-1">
             {/* Run Button (Available for ALL users) */}
             <button
@@ -143,6 +144,20 @@ export const AppCard: React.FC<AppCardProps> = ({
             >
               <Play size={12} className="fill-white" />
               <span>Run</span>
+            </button>
+
+            {/* Share Link Button (Available for ALL users) */}
+            <button
+              onClick={() => {
+                const slug = app.slug || app.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || app.id;
+                const shareUrl = `${window.location.origin}/${slug}`;
+                navigator.clipboard.writeText(shareUrl);
+                alert(`Direct application URL copied to clipboard:\n${shareUrl}`);
+              }}
+              title="Copy direct shareable link"
+              className={`p-1.5 ${theme === 'light' ? 'text-slate-600 hover:text-blue-600 hover:bg-slate-100' : 'text-gray-400 hover:text-blue-400 hover:bg-gray-800'} rounded-lg transition-colors`}
+            >
+              <Share2 size={14} />
             </button>
 
             {/* ADMIN ONLY ACTIONS */}
