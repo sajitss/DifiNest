@@ -214,7 +214,7 @@ if (fs.existsSync(DIST_DIR)) {
   app.use(express.static(DIST_DIR));
 
   // SPA fallback routing for deep links (e.g. /dailyweather)
-  app.get('*', (req, res) => {
+  app.use((req, res) => {
     res.sendFile(path.join(DIST_DIR, 'index.html'));
   });
 }
