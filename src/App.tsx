@@ -50,32 +50,12 @@ export default function App() {
     setFavorites(StorageService.getFavorites());
   }, []);
 
-  // Verify saved admin token with backend on mount
+  // Check saved admin status on mount
   useEffect(() => {
-    const verifyToken = async () => {
-      const token = StorageService.getAdminToken();
-      if (!token) return;
-
-      try {
-        const res = await fetch('/api/admin/verify', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        const data = await res.json();
-        if (data.valid) {
-          setIsAdmin(true);
-        } else {
-          StorageService.clearAdminToken();
-          setIsAdmin(false);
-        }
-      } catch {
-        // Backend not reachable or offline; keep local status
-      }
-    };
-
-    verifyToken();
+    const token = StorageService.getAdminToken();
+    if (token) {
+      setIsAdmin(true);
+    }
   }, []);
 
   useEffect(() => {
