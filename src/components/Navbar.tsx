@@ -92,7 +92,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 Difi<span className="text-blue-500">Nest</span>
               </span>
               <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full border font-semibold ${theme === 'light' ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-blue-950 text-blue-400 border-blue-800/60'}`}>
-                Private Portal
+                Community Portal
               </span>
             </div>
             <p className={`text-[10px] font-sans hidden sm:block ${theme === 'light' ? 'text-slate-500' : 'text-gray-400'}`}>

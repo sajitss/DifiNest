@@ -305,7 +305,7 @@ export default function App() {
         <div className="max-w-7xl mx-auto flex items-center justify-center gap-2">
           <Layers size={16} className="text-blue-500" />
           <span className={`font-bold ${theme === 'light' ? 'text-slate-800' : 'text-gray-300'}`}>DifiNest</span>
-          <span>— Private Web Application & Code Showcase Portal</span>
+          <span>— Community Web Application & Code Showcase Portal</span>
         </div>
       </footer>
 
