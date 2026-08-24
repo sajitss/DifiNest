@@ -72,7 +72,7 @@ export const AdminAuthModal: React.FC<AdminAuthModalProps> = ({ onSuccess, onClo
 
         <h3 className="text-center text-lg font-bold text-white mb-1">Admin Authentication</h3>
         <p className="text-center text-xs text-gray-400 mb-6">
-          Sign in with your organization email and algorithmic password token to access administrative controls.
+          Sign in with your organization email and password to access administrative controls.
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -86,7 +86,7 @@ export const AdminAuthModal: React.FC<AdminAuthModalProps> = ({ onSuccess, onClo
                 type="email"
                 value={email}
                 onChange={e => { setEmail(e.target.value); setErrorMsg(null); }}
-                placeholder="e.g. saji@difinative.com"
+                placeholder="Enter email address"
                 required
                 autoFocus
                 className="w-full bg-gray-950 border border-gray-800 rounded-xl pl-9 pr-4 py-2.5 text-sm text-white placeholder-gray-600 outline-none focus:border-amber-500 transition-colors"
@@ -104,7 +104,7 @@ export const AdminAuthModal: React.FC<AdminAuthModalProps> = ({ onSuccess, onClo
                 type="password"
                 value={password}
                 onChange={e => { setPassword(e.target.value); setErrorMsg(null); }}
-                placeholder="e.g. saji423"
+                placeholder="Enter password"
                 required
                 className="w-full bg-gray-950 border border-gray-800 rounded-xl pl-9 pr-4 py-2.5 text-sm text-white placeholder-gray-600 outline-none focus:border-amber-500 transition-colors"
               />
@@ -117,10 +117,6 @@ export const AdminAuthModal: React.FC<AdminAuthModalProps> = ({ onSuccess, onClo
               <span>{errorMsg}</span>
             </div>
           )}
-
-          <div className="p-2.5 bg-blue-950/30 border border-blue-800/40 rounded-xl text-blue-300/90 text-[11px] leading-relaxed">
-            <span className="font-semibold text-blue-300">Security Rule:</span> Password is verified on backend via dynamic ASCII token formula (username + ASCII sum).
-          </div>
 
           <button
             type="submit"
