@@ -8,7 +8,8 @@ import {
   Wrench,
   Sparkles,
   Folder,
-  ArrowUpDown
+  ArrowUpDown,
+  Star
 } from 'lucide-react';
 
 interface CategoryFilterProps {
@@ -18,6 +19,9 @@ interface CategoryFilterProps {
   sortBy: 'recent' | 'name' | 'views';
   onSortChange: (sort: 'recent' | 'name' | 'views') => void;
   appCountsByCategory: Record<string, number>;
+  favoritesCount: number;
+  onlyFavorites: boolean;
+  onToggleOnlyFavorites: () => void;
   theme: 'dark' | 'light';
 }
 
@@ -28,6 +32,9 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({
   sortBy,
   onSortChange,
   appCountsByCategory,
+  favoritesCount,
+  onlyFavorites,
+  onToggleOnlyFavorites,
   theme
 }) => {
   const getCategoryIcon = (iconName: string) => {
@@ -43,15 +50,42 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({
   };
 
   return (
-    <div className={`flex flex-col md:flex-row md:items-center justify-between gap-4 py-6 border-b ${theme === 'light' ? 'border-slate-200' : 'border-gray-800'}`}>
-      {/* Category Pills horizontal scroll */}
+    <div className={`flex flex-col md:flex-row md:items-center justify-between gap-4 py-4 border-b ${theme === 'light' ? 'border-slate-200' : 'border-gray-800'}`}>
+      {/* Category Pills and Favorites Toggle */}
       <div className="flex items-center gap-2 overflow-x-auto pb-2 md:pb-0 no-scrollbar">
+        {/* Favorites Filter Toggle Pill */}
+        <button
+          onClick={onToggleOnlyFavorites}
+          className={`px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-2 border ${
+            onlyFavorites
+              ? 'bg-amber-500 border-amber-400 text-black shadow-lg shadow-amber-500/20 font-bold'
+              : (theme === 'light' 
+                  ? 'bg-white border-slate-200 text-slate-700 hover:border-amber-400 hover:text-amber-700 shadow-sm' 
+                  : 'bg-gray-900 border-gray-800 text-gray-300 hover:border-amber-500/50 hover:text-amber-300')
+          }`}
+          title="Toggle view to only show starred favorite apps"
+        >
+          <Star size={14} className={onlyFavorites ? 'fill-black text-black' : (favoritesCount > 0 ? 'fill-amber-400 text-amber-400' : 'text-gray-400')} />
+          <span>Favorites</span>
+          <span
+            className={`px-1.5 py-0.2 text-[10px] rounded-full font-mono ${
+              onlyFavorites
+                ? 'bg-amber-700 text-amber-100 font-bold'
+                : (theme === 'light' ? 'bg-amber-50 text-amber-800 border border-amber-200' : 'bg-amber-950 text-amber-300 border border-amber-800/60')
+            }`}
+          >
+            {favoritesCount}
+          </span>
+        </button>
+
+        <div className={`h-6 w-[1px] ${theme === 'light' ? 'bg-slate-300' : 'bg-gray-800'} mx-1 shrink-0`}></div>
+
         {categories.map(cat => {
           const count = cat.id === 'all' 
             ? Object.values(appCountsByCategory).reduce((a, b) => a + b, 0)
             : (appCountsByCategory[cat.id] || 0);
 
-          const isSelected = selectedCategory === cat.id;
+          const isSelected = selectedCategory === cat.id && !onlyFavorites;
 
           return (
             <button

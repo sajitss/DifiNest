@@ -3,6 +3,8 @@ import { INITIAL_CATEGORIES, INITIAL_APPS } from './seedData';
 
 const APPS_STORAGE_KEY = 'difinest_web_apps_v1';
 const CATEGORIES_STORAGE_KEY = 'difinest_categories_v1';
+const FAVORITES_STORAGE_KEY = 'difinest_favorite_apps_v1';
+const ADMIN_TOKEN_KEY = 'difinest_admin_token_v1';
 
 export class StorageService {
   public static getCategories(): Category[] {
@@ -52,8 +54,57 @@ export class StorageService {
     }
   }
 
+  public static getFavorites(): string[] {
+    try {
+      const stored = localStorage.getItem(FAVORITES_STORAGE_KEY);
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  public static toggleFavorite(appId: string): boolean {
+    const favorites = this.getFavorites();
+    const index = favorites.indexOf(appId);
+    let isNowFavorite = false;
+
+    if (index !== -1) {
+      favorites.splice(index, 1);
+      isNowFavorite = false;
+    } else {
+      favorites.push(appId);
+      isNowFavorite = true;
+    }
+
+    localStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify(favorites));
+    return isNowFavorite;
+  }
+
+  public static isFavorite(appId: string): boolean {
+    const favorites = this.getFavorites();
+    return favorites.includes(appId);
+  }
+
+  public static getAdminToken(): string | null {
+    return localStorage.getItem(ADMIN_TOKEN_KEY);
+  }
+
+  public static setAdminToken(token: string): void {
+    localStorage.setItem(ADMIN_TOKEN_KEY, token);
+  }
+
+  public static clearAdminToken(): void {
+    localStorage.removeItem(ADMIN_TOKEN_KEY);
+  }
+
   public static getFilteredApps(filter: AppFilter): WebApp[] {
     let apps = this.getApps();
+    const favorites = this.getFavorites();
+
+    // Favorites only filter
+    if (filter.onlyFavorites) {
+      apps = apps.filter(app => favorites.includes(app.id));
+    }
 
     // Category filter
     if (filter.category && filter.category !== 'all') {
@@ -203,6 +254,7 @@ export class StorageService {
   public static resetToDefaults(): void {
     localStorage.setItem(CATEGORIES_STORAGE_KEY, JSON.stringify(INITIAL_CATEGORIES));
     localStorage.setItem(APPS_STORAGE_KEY, JSON.stringify(INITIAL_APPS));
+    localStorage.removeItem(FAVORITES_STORAGE_KEY);
   }
 
   public static exportDatabaseJSON(): string {
@@ -210,7 +262,8 @@ export class StorageService {
       version: '1.0',
       exportedAt: new Date().toISOString(),
       categories: this.getCategories(),
-      apps: this.getApps()
+      apps: this.getApps(),
+      favorites: this.getFavorites()
     };
     return JSON.stringify(data, null, 2);
   }
@@ -222,6 +275,9 @@ export class StorageService {
         localStorage.setItem(APPS_STORAGE_KEY, JSON.stringify(parsed.apps));
         if (Array.isArray(parsed.categories)) {
           localStorage.setItem(CATEGORIES_STORAGE_KEY, JSON.stringify(parsed.categories));
+        }
+        if (Array.isArray(parsed.favorites)) {
+          localStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify(parsed.favorites));
         }
         return true;
       }

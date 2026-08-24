@@ -8,11 +8,12 @@ import { AppCard } from './components/AppCard';
 import { PlayroomModal } from './components/PlayroomModal';
 import { CreateAppModal } from './components/CreateAppModal';
 import { AdminAuthModal } from './components/AdminAuthModal';
-import { Layers, Plus, Inbox } from 'lucide-react';
+import { Layers, Plus, Inbox, Star } from 'lucide-react';
 
 export default function App() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [apps, setApps] = useState<WebApp[]>([]);
+  const [favorites, setFavorites] = useState<string[]>([]);
   
   const [isAdmin, setIsAdmin] = useState(false);
   const [showAdminAuth, setShowAdminAuth] = useState(false);
@@ -26,7 +27,8 @@ export default function App() {
     searchQuery: '',
     category: 'all',
     tag: undefined,
-    sortBy: 'recent'
+    sortBy: 'recent',
+    onlyFavorites: false
   });
 
   // Load initial data and resolve URL route
@@ -45,6 +47,35 @@ export default function App() {
     setCategories(StorageService.getCategories());
     const allApps = StorageService.getApps();
     setApps(allApps);
+    setFavorites(StorageService.getFavorites());
+  }, []);
+
+  // Verify saved admin token with backend on mount
+  useEffect(() => {
+    const verifyToken = async () => {
+      const token = StorageService.getAdminToken();
+      if (!token) return;
+
+      try {
+        const res = await fetch('/api/admin/verify', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        const data = await res.json();
+        if (data.valid) {
+          setIsAdmin(true);
+        } else {
+          StorageService.clearAdminToken();
+          setIsAdmin(false);
+        }
+      } catch {
+        // Backend not reachable or offline; keep local status
+      }
+    };
+
+    verifyToken();
   }, []);
 
   useEffect(() => {
@@ -91,7 +122,13 @@ export default function App() {
   const filteredApps = useMemo(() => {
     let result = [...apps];
 
-    if (filter.category && filter.category !== 'all') {
+    // Filter only favorites
+    if (filter.onlyFavorites) {
+      result = result.filter(a => favorites.includes(a.id));
+    }
+
+    // Category filter (ignored if favorites only unless user explicitly filters)
+    if (!filter.onlyFavorites && filter.category && filter.category !== 'all') {
       result = result.filter(a => a.category === filter.category);
     }
 
@@ -119,14 +156,20 @@ export default function App() {
     }
 
     return result;
-  }, [apps, filter]);
+  }, [apps, filter, favorites]);
 
   const handleToggleAdmin = () => {
     if (isAdmin) {
       setIsAdmin(false);
+      StorageService.clearAdminToken();
     } else {
       setShowAdminAuth(true);
     }
+  };
+
+  const handleToggleFavorite = (appId: string) => {
+    StorageService.toggleFavorite(appId);
+    setFavorites(StorageService.getFavorites());
   };
 
   const handleRunApp = (app: WebApp) => {
@@ -205,14 +248,17 @@ export default function App() {
 
       {/* Main Body Catalog Workspace */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 pb-16 space-y-6">
-        {/* Category Pill Filters & Sorting */}
+        {/* Category Pill Filters, Favorites Toggle & Sorting */}
         <CategoryFilter
           categories={categories}
           selectedCategory={filter.category}
-          onSelectCategory={catId => setFilter(prev => ({ ...prev, category: catId }))}
+          onSelectCategory={catId => setFilter(prev => ({ ...prev, category: catId, onlyFavorites: false }))}
           sortBy={filter.sortBy}
           onSortChange={sort => setFilter(prev => ({ ...prev, sortBy: sort }))}
           appCountsByCategory={appCountsByCategory}
+          favoritesCount={favorites.length}
+          onlyFavorites={!!filter.onlyFavorites}
+          onToggleOnlyFavorites={() => setFilter(prev => ({ ...prev, onlyFavorites: !prev.onlyFavorites }))}
           theme={theme}
         />
 
@@ -225,8 +271,10 @@ export default function App() {
                 app={app}
                 categories={categories}
                 isAdmin={isAdmin}
+                isFavorite={favorites.includes(app.id)}
                 theme={theme}
                 onRunApp={handleRunApp}
+                onToggleFavorite={handleToggleFavorite}
                 onEditApp={handleEditApp}
                 onDeleteApp={handleDeleteApp}
                 onForkApp={handleForkApp}
@@ -237,16 +285,29 @@ export default function App() {
         ) : (
           <div className={`py-20 text-center ${theme === 'light' ? 'bg-white border-slate-200' : 'bg-gray-900/40 border-gray-800/80'} border rounded-2xl p-8 space-y-3`}>
             <div className={`w-12 h-12 rounded-full ${theme === 'light' ? 'bg-slate-100 text-slate-400' : 'bg-gray-800 text-gray-400'} flex items-center justify-center mx-auto`}>
-              <Inbox size={24} />
+              {filter.onlyFavorites ? <Star size={24} className="text-amber-400" /> : <Inbox size={24} />}
             </div>
-            <h3 className={`text-lg font-bold ${theme === 'light' ? 'text-slate-900' : 'text-white'}`}>No Applications Found</h3>
+            <h3 className={`text-lg font-bold ${theme === 'light' ? 'text-slate-900' : 'text-white'}`}>
+              {filter.onlyFavorites ? 'No Favorite Apps Flagged' : 'No Applications Found'}
+            </h3>
             <p className={`text-xs ${theme === 'light' ? 'text-slate-500' : 'text-gray-400'} max-w-md mx-auto`}>
-              {filter.searchQuery || filter.tag
-                ? `No matching applications found for query "${filter.searchQuery || filter.tag}". Try clearing your filters.`
-                : 'No applications uploaded yet in this category.'}
+              {filter.onlyFavorites
+                ? 'Click the star icon on any application card in the catalogue to save it to your favorites.'
+                : (filter.searchQuery || filter.tag
+                    ? `No matching applications found for query "${filter.searchQuery || filter.tag}". Try clearing your filters.`
+                    : 'No applications uploaded yet in this category.')}
             </p>
 
-            {isAdmin && (
+            {filter.onlyFavorites && (
+              <button
+                onClick={() => setFilter(prev => ({ ...prev, onlyFavorites: false }))}
+                className="mt-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-semibold shadow-lg shadow-blue-600/20"
+              >
+                View All Applications
+              </button>
+            )}
+
+            {isAdmin && !filter.onlyFavorites && (
               <button
                 onClick={() => { setEditingApp(null); setShowCreateModal(true); }}
                 className="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-semibold inline-flex items-center gap-1.5 shadow-lg shadow-blue-600/20"

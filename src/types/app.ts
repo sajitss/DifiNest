@@ -39,6 +39,7 @@ export interface AppFilter {
   category: CategoryId;
   tag?: string;
   sortBy: 'recent' | 'name' | 'views';
+  onlyFavorites?: boolean;
 }
 
 export type ViewportMode = 'desktop' | 'tablet' | 'mobile' | 'fullscreen';

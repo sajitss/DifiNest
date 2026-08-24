@@ -10,7 +10,8 @@ import {
   Edit,
   User,
   Sparkles,
-  Share2
+  Share2,
+  Star
 } from 'lucide-react';
 import { ZipService } from '../services/zipService';
 
@@ -18,8 +19,10 @@ interface AppCardProps {
   app: WebApp;
   categories: Category[];
   isAdmin: boolean;
+  isFavorite?: boolean;
   theme: 'dark' | 'light';
   onRunApp: (app: WebApp) => void;
+  onToggleFavorite?: (appId: string) => void;
   onEditApp?: (app: WebApp) => void;
   onDeleteApp?: (id: string) => void;
   onForkApp?: (id: string) => void;
@@ -30,8 +33,10 @@ export const AppCard: React.FC<AppCardProps> = ({
   app,
   categories,
   isAdmin,
+  isFavorite = false,
   theme,
   onRunApp,
+  onToggleFavorite,
   onEditApp,
   onDeleteApp,
   onForkApp,
@@ -61,21 +66,42 @@ export const AppCard: React.FC<AppCardProps> = ({
         {/* Gradient overlay for title contrast */}
         <div className={`absolute inset-0 ${theme === 'light' ? 'bg-gradient-to-t from-white/80 via-transparent to-transparent' : 'bg-gradient-to-t from-gray-900 via-transparent to-black/30'} pointer-events-none`}></div>
 
-        {/* Top Badges */}
+        {/* Top Badges & Favorite Star */}
         <div className="absolute top-3 left-3 right-3 flex items-center justify-between pointer-events-none">
           <span className={`${theme === 'light' ? 'bg-white/90 text-blue-600 border-blue-200' : 'bg-gray-950/80 text-blue-400 border-blue-800/60'} backdrop-blur-md border text-[10px] px-2.5 py-1 rounded-full font-mono uppercase font-bold tracking-wider`}>
             {categoryObj ? categoryObj.name : app.category}
           </span>
 
-          {app.isFeatured && (
-            <span className={`${theme === 'light' ? 'bg-amber-100 text-amber-800 border-amber-300' : 'bg-amber-950/90 text-amber-300 border-amber-500/50'} border text-[10px] px-2 py-0.5 rounded-full font-semibold flex items-center gap-1`}>
-              <Sparkles size={11} /> Featured
-            </span>
-          )}
+          <div className="flex items-center gap-1.5 pointer-events-auto">
+            {app.isFeatured && (
+              <span className={`${theme === 'light' ? 'bg-amber-100 text-amber-800 border-amber-300' : 'bg-amber-950/90 text-amber-300 border-amber-500/50'} border text-[10px] px-2 py-0.5 rounded-full font-semibold flex items-center gap-1`}>
+                <Sparkles size={11} /> Featured
+              </span>
+            )}
+
+            {/* Favorite Star Button */}
+            {onToggleFavorite && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onToggleFavorite(app.id);
+                }}
+                className={`p-1.5 rounded-full backdrop-blur-md border transition-all ${
+                  isFavorite
+                    ? 'bg-amber-500/20 border-amber-500 text-amber-400 shadow-md shadow-amber-500/20'
+                    : 'bg-black/50 border-white/20 text-white/70 hover:text-amber-400 hover:border-amber-400'
+                }`}
+                title={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+              >
+                <Star size={13} className={isFavorite ? 'fill-amber-400 text-amber-400' : ''} />
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Hover Launch Overlay Button */}
-        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 bg-black/30 backdrop-blur-[2px] transition-all duration-200">
+        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 bg-black/30 backdrop-blur-[2px] transition-all duration-200 pointer-events-none group-hover:pointer-events-auto">
           <button
             onClick={(e) => { e.stopPropagation(); onRunApp(app); }}
             className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs rounded-xl shadow-xl transform group-hover:scale-105 transition-all flex items-center gap-1.5"
@@ -206,8 +232,8 @@ export const AppCard: React.FC<AppCardProps> = ({
                         onDeleteApp(app.id);
                       }
                     }}
-                    title="Admin Delete Application"
-                    className={`p-1.5 ${theme === 'light' ? 'text-slate-600 hover:text-rose-600 hover:bg-slate-100' : 'text-gray-400 hover:text-rose-400 hover:bg-gray-800'} rounded-lg transition-colors`}
+                    title="Delete Application"
+                    className={`p-1.5 text-rose-400 hover:text-rose-300 hover:bg-rose-950/50 rounded-lg transition-colors`}
                   >
                     <Trash2 size={14} />
                   </button>
