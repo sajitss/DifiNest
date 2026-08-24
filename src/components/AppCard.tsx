@@ -67,14 +67,14 @@ export const AppCard: React.FC<AppCardProps> = ({
         <div className={`absolute inset-0 ${theme === 'light' ? 'bg-gradient-to-t from-white/80 via-transparent to-transparent' : 'bg-gradient-to-t from-gray-900 via-transparent to-black/30'} pointer-events-none`}></div>
 
         {/* Top Badges & Favorite Star */}
-        <div className="absolute top-3 left-3 right-3 flex items-center justify-between pointer-events-none">
-          <span className={`${theme === 'light' ? 'bg-white/90 text-blue-600 border-blue-200' : 'bg-gray-950/80 text-blue-400 border-blue-800/60'} backdrop-blur-md border text-[10px] px-2.5 py-1 rounded-full font-mono uppercase font-bold tracking-wider`}>
+        <div className="absolute top-3 left-3 right-3 flex items-center justify-between z-10 pointer-events-none">
+          <span className={`${theme === 'light' ? 'bg-white/95 text-blue-700 border-blue-200' : 'bg-gray-950/90 text-blue-400 border-blue-800/80'} backdrop-blur-md border text-[10px] px-2.5 py-1 rounded-full font-mono uppercase font-bold tracking-wider shadow-sm`}>
             {categoryObj ? categoryObj.name : app.category}
           </span>
 
           <div className="flex items-center gap-1.5 pointer-events-auto">
             {app.isFeatured && (
-              <span className={`${theme === 'light' ? 'bg-amber-100 text-amber-800 border-amber-300' : 'bg-amber-950/90 text-amber-300 border-amber-500/50'} border text-[10px] px-2 py-0.5 rounded-full font-semibold flex items-center gap-1`}>
+              <span className={`${theme === 'light' ? 'bg-amber-100 text-amber-900 border-amber-300' : 'bg-amber-950/90 text-amber-300 border-amber-500/60'} border text-[10px] px-2 py-0.5 rounded-full font-semibold flex items-center gap-1 shadow-sm`}>
                 <Sparkles size={11} /> Featured
               </span>
             )}
@@ -84,17 +84,18 @@ export const AppCard: React.FC<AppCardProps> = ({
               <button
                 type="button"
                 onClick={(e) => {
+                  e.preventDefault();
                   e.stopPropagation();
                   onToggleFavorite(app.id);
                 }}
-                className={`p-1.5 rounded-full backdrop-blur-md border transition-all ${
+                className={`p-2 rounded-full backdrop-blur-md border transition-all shadow-md cursor-pointer hover:scale-110 active:scale-95 ${
                   isFavorite
-                    ? 'bg-amber-500/20 border-amber-500 text-amber-400 shadow-md shadow-amber-500/20'
-                    : 'bg-black/50 border-white/20 text-white/70 hover:text-amber-400 hover:border-amber-400'
+                    ? 'bg-amber-500 text-white border-amber-400 shadow-amber-500/40'
+                    : 'bg-black/60 border-white/30 text-white/90 hover:text-amber-300 hover:border-amber-400 hover:bg-black/80'
                 }`}
                 title={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
               >
-                <Star size={13} className={isFavorite ? 'fill-amber-400 text-amber-400' : ''} />
+                <Star size={14} className={isFavorite ? 'fill-white text-white' : ''} />
               </button>
             )}
           </div>
@@ -171,6 +172,26 @@ export const AppCard: React.FC<AppCardProps> = ({
               <Play size={12} className="fill-white" />
               <span>Run</span>
             </button>
+
+            {/* Favorite Star Button in Footer */}
+            {onToggleFavorite && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onToggleFavorite(app.id);
+                }}
+                title={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+                className={`p-1.5 rounded-lg transition-all ${
+                  isFavorite
+                    ? 'text-amber-500 bg-amber-500/10 hover:bg-amber-500/20'
+                    : (theme === 'light' ? 'text-slate-500 hover:text-amber-600 hover:bg-slate-100' : 'text-gray-400 hover:text-amber-400 hover:bg-gray-800')
+                }`}
+              >
+                <Star size={14} className={isFavorite ? 'fill-amber-500 text-amber-500' : ''} />
+              </button>
+            )}
 
             {/* Share Link Button (Available for ALL users) */}
             <button
