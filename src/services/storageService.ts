@@ -7,6 +7,25 @@ const FAVORITES_STORAGE_KEY = 'difinest_favorite_apps_v1';
 const ADMIN_TOKEN_KEY = 'difinest_admin_token_v1';
 
 export class StorageService {
+  /**
+   * Fetch categories from backend API if available, fallback to local storage / seed
+   */
+  public static async fetchCategories(): Promise<Category[]> {
+    try {
+      const res = await fetch('/api/categories');
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data) && data.length > 0) {
+          localStorage.setItem(CATEGORIES_STORAGE_KEY, JSON.stringify(data));
+          return data;
+        }
+      }
+    } catch {
+      // Backend not running or offline; fallback to local
+    }
+    return this.getCategories();
+  }
+
   public static getCategories(): Category[] {
     try {
       const stored = localStorage.getItem(CATEGORIES_STORAGE_KEY);
@@ -38,7 +57,34 @@ export class StorageService {
 
     categories.push(newCategory);
     localStorage.setItem(CATEGORIES_STORAGE_KEY, JSON.stringify(categories));
+
+    // Async sync to backend
+    fetch('/api/categories', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(categories)
+    }).catch(() => {});
+
     return newCategory;
+  }
+
+  /**
+   * Fetch apps from backend API if available, fallback to local storage / seed
+   */
+  public static async fetchApps(): Promise<WebApp[]> {
+    try {
+      const res = await fetch('/api/apps');
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data) && data.length > 0) {
+          localStorage.setItem(APPS_STORAGE_KEY, JSON.stringify(data));
+          return data;
+        }
+      }
+    } catch {
+      // Backend not running or offline; fallback to local
+    }
+    return this.getApps();
   }
 
   public static getApps(): WebApp[] {
@@ -187,11 +233,12 @@ export class StorageService {
       slug = appData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
     }
 
+    let updatedApp: WebApp;
     if (appData.id) {
       // Updating existing app
       const index = apps.findIndex(a => a.id === appData.id);
       if (index !== -1) {
-        const updatedApp: WebApp = {
+        updatedApp = {
           ...apps[index],
           ...appData,
           slug,
@@ -199,25 +246,41 @@ export class StorageService {
           updatedAt: now
         };
         apps[index] = updatedApp;
-        localStorage.setItem(APPS_STORAGE_KEY, JSON.stringify(apps));
-        return updatedApp;
+      } else {
+        updatedApp = {
+          ...appData,
+          slug,
+          id: appData.id,
+          createdAt: now,
+          updatedAt: now,
+          viewCount: 0
+        };
+        apps.unshift(updatedApp);
       }
+    } else {
+      // Creating new app
+      const newId = 'app-' + Date.now().toString(36) + '-' + Math.random().toString(36).substring(2, 6);
+      updatedApp = {
+        ...appData,
+        slug,
+        id: newId,
+        createdAt: now,
+        updatedAt: now,
+        viewCount: 0
+      };
+      apps.unshift(updatedApp);
     }
 
-    // Creating new app
-    const newId = 'app-' + Date.now().toString(36) + '-' + Math.random().toString(36).substring(2, 6);
-    const newApp: WebApp = {
-      ...appData,
-      slug,
-      id: newId,
-      createdAt: now,
-      updatedAt: now,
-      viewCount: 0
-    };
-
-    apps.unshift(newApp);
     localStorage.setItem(APPS_STORAGE_KEY, JSON.stringify(apps));
-    return newApp;
+
+    // Save to backend static files & disk database
+    fetch('/api/apps', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updatedApp)
+    }).catch(() => {});
+
+    return updatedApp;
   }
 
   public static duplicateApp(id: string): WebApp | undefined {
@@ -246,6 +309,12 @@ export class StorageService {
     const filtered = apps.filter(a => a.id !== id);
     if (filtered.length !== apps.length) {
       localStorage.setItem(APPS_STORAGE_KEY, JSON.stringify(filtered));
+
+      // Delete from backend disk storage
+      fetch(`/api/apps/${id}`, {
+        method: 'DELETE'
+      }).catch(() => {});
+
       return true;
     }
     return false;

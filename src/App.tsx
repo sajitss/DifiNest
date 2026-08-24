@@ -43,11 +43,17 @@ export default function App() {
     }
   }, []);
 
-  const loadData = useCallback(() => {
+  const loadData = useCallback(async () => {
+    // Initial render from local cache
     setCategories(StorageService.getCategories());
-    const allApps = StorageService.getApps();
-    setApps(allApps);
+    setApps(StorageService.getApps());
     setFavorites(StorageService.getFavorites());
+
+    // Fetch live shared apps from backend disk storage
+    const serverCategories = await StorageService.fetchCategories();
+    const serverApps = await StorageService.fetchApps();
+    setCategories(serverCategories);
+    setApps(serverApps);
   }, []);
 
   // Check saved admin status on mount

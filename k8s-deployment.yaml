@@ -20,6 +20,9 @@ spec:
         imagePullPolicy: Always
         ports:
         - containerPort: 80
+        volumeMounts:
+        - name: difinest-data
+          mountPath: /app/data
         resources:
           requests:
             cpu: "50m"
@@ -39,6 +42,21 @@ spec:
             port: 80
           initialDelaySeconds: 3
           periodSeconds: 5
+      volumes:
+      - name: difinest-data
+        persistentVolumeClaim:
+          claimName: difinest-pvc
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: difinest-pvc
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 5Gi
 ---
 apiVersion: v1
 kind: Service

@@ -11,19 +11,24 @@ RUN npm ci
 COPY . .
 RUN npm run build
 
-# Stage 2: Production Nginx Server
-FROM nginx:alpine
+# Stage 2: Production Server (Node.js Express + Static Files Engine)
+FROM node:20-alpine
 
-# Remove default nginx static assets
-RUN rm -rf /usr/share/nginx/html/*
+WORKDIR /app
 
-# Copy build artifacts from builder stage
-COPY --from=builder /app/dist /usr/share/nginx/html
+COPY package*.json ./
+RUN npm ci --omit=dev
 
-# Copy custom Nginx configuration
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Copy built frontend assets and server
+COPY --from=builder /app/dist ./dist
+COPY server.js ./
 
-# Expose port 80
+# Create volume directory for admin-uploaded static apps and catalog JSON
+RUN mkdir -p /app/data/apps
+
+ENV PORT=80
+ENV DATA_DIR=/app/data
+
 EXPOSE 80
 
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["node", "server.js"]
