@@ -1,12 +1,16 @@
 {
   "name": "difinest",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
     "start": "node server.js",
+    "release:docker": "node scripts/release-docker.js",
+    "release:patch": "npm version patch && node scripts/release-docker.js",
+    "release:minor": "npm version minor && node scripts/release-docker.js",
+    "release:major": "npm version major && node scripts/release-docker.js",
     "lint": "oxlint",
     "preview": "vite preview"
   },
