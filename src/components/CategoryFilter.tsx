@@ -9,7 +9,10 @@ import {
   Sparkles,
   Folder,
   ArrowUpDown,
-  Star
+  Star,
+  GraduationCap,
+  CheckSquare,
+  Building2
 } from 'lucide-react';
 
 interface CategoryFilterProps {
@@ -39,11 +42,14 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({
 }) => {
   const getCategoryIcon = (iconName: string) => {
     switch (iconName) {
+      case 'GraduationCap': return <GraduationCap size={15} />;
+      case 'CheckSquare': return <CheckSquare size={15} />;
+      case 'Sparkles': return <Sparkles size={15} />;
+      case 'Building2': return <Building2 size={15} />;
       case 'Layout': return <Layout size={15} />;
       case 'Gamepad2': return <Gamepad2 size={15} />;
       case 'Kanban': return <Kanban size={15} />;
       case 'Wrench': return <Wrench size={15} />;
-      case 'Sparkles': return <Sparkles size={15} />;
       case 'Grid': return <Grid size={15} />;
       default: return <Folder size={15} />;
     }

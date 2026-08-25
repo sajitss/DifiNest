@@ -1,4 +1,4 @@
-export type CategoryId = 'all' | 'ui-components' | 'games-canvas' | 'dashboards' | 'utilities' | 'css-art' | string;
+export type CategoryId = 'all' | 'learning-science' | 'work-utilities' | 'creative-arts' | 'industrial-enterprise' | string;
 
 export interface Category {
   id: CategoryId;

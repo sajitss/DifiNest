@@ -4,38 +4,32 @@ export const INITIAL_CATEGORIES: Category[] = [
   {
     id: 'all',
     name: 'All Applications',
-    description: 'Browse the complete catalogue of applications',
+    description: 'Browse the complete community portal collection',
     iconName: 'Grid'
   },
   {
-    id: 'ui-components',
-    name: 'UI Components & Kits',
-    description: 'Interactive widgets, dynamic controls, and design system components',
-    iconName: 'Layout'
+    id: 'learning-science',
+    name: 'Learning & Science',
+    description: 'Educational simulations, science experiments, and interactive learning tools',
+    iconName: 'GraduationCap'
   },
   {
-    id: 'games-canvas',
-    name: 'Games & Canvas',
-    description: 'Interactive HTML5 Canvas, 2D/3D physics, particle effects, and web games',
-    iconName: 'Gamepad2'
+    id: 'work-utilities',
+    name: 'Work & Daily Utilities',
+    description: 'Task boards, note editors, calculators, and everyday productivity tools',
+    iconName: 'CheckSquare'
   },
   {
-    id: 'dashboards',
-    name: 'Dashboards & Tools',
-    description: 'Productivity apps, task boards, analytics visualizers, and admin layouts',
-    iconName: 'Kanban'
-  },
-  {
-    id: 'utilities',
-    name: 'Utilities & Editors',
-    description: 'Converters, text formatters, live previewers, and developer helpers',
-    iconName: 'Wrench'
-  },
-  {
-    id: 'css-art',
-    name: 'CSS Art & Animations',
-    description: 'Pure CSS graphics, keyframe animations, and glowing neon effects',
+    id: 'creative-arts',
+    name: 'Creative Arts & Games',
+    description: 'Interactive games, digital art, animated visualizers, and creative media',
     iconName: 'Sparkles'
+  },
+  {
+    id: 'industrial-enterprise',
+    name: 'Industrial & Enterprise',
+    description: 'Industrial operations, IoT dashboards, business workflows, and enterprise tools',
+    iconName: 'Building2'
   }
 ];
 
@@ -44,7 +38,7 @@ export const INITIAL_APPS: WebApp[] = [
     id: 'app-matrix-synth',
     name: 'Cyberpunk Matrix Rain & Audio Synth',
     description: 'Interactive HTML5 Canvas Matrix stream with Web Audio API sound synthesis. Move your cursor to warp streams or click to generate sound frequencies.',
-    category: 'games-canvas',
+    category: 'creative-arts',
     tags: ['canvas', 'audio-api', 'cyberpunk', 'animation', 'interactive'],
     author: 'System Admin',
     createdAt: '2026-08-20T10:00:00.000Z',
@@ -271,7 +265,7 @@ draw();`
     id: 'app-glass-ui',
     name: 'Glassmorphism Interactive Design Suite',
     description: 'Dynamic frosted glass UI control panel with live customizers for backdrop blur, border shine, gradient hues, and instant CSS code generator.',
-    category: 'ui-components',
+    category: 'creative-arts',
     tags: ['glassmorphism', 'ui-kit', 'css-vars', 'customizer', 'modern'],
     author: 'Design Team',
     createdAt: '2026-08-19T14:30:00.000Z',
@@ -564,7 +558,7 @@ copyCssBtn.addEventListener('click', () => {
     id: 'app-kanban-flow',
     name: 'Kanban Flow Interactive Task Board',
     description: 'Full-featured task management application with drag-and-drop workflow, task creation, tag filters, and column state persistence.',
-    category: 'dashboards',
+    category: 'work-utilities',
     tags: ['kanban', 'drag-drop', 'productivity', 'dashboard', 'interactive'],
     author: 'DevOps Team',
     createdAt: '2026-08-18T11:20:00.000Z',
@@ -877,7 +871,7 @@ renderBoard();`
     id: 'app-3d-gravity',
     name: '3D Orbit Particle Physics Sandbox',
     description: 'Interactive HTML5 particle simulation with velocity decay, gravitational attraction fields, and real-time particle count counters.',
-    category: 'games-canvas',
+    category: 'learning-science',
     tags: ['canvas', 'physics', 'particles', 'interactive', 'gravity'],
     author: 'Canvas Lab',
     createdAt: '2026-08-17T08:00:00.000Z',
@@ -1026,7 +1020,7 @@ animate();`
     id: 'app-markdown-studio',
     name: 'Live Markdown Studio & Previewer',
     description: 'Instant live split-screen Markdown authoring studio with real-time HTML formatting, word counter, and instant export tools.',
-    category: 'utilities',
+    category: 'work-utilities',
     tags: ['markdown', 'editor', 'previewer', 'text-tool', 'utilities'],
     author: 'Tools Division',
     createdAt: '2026-08-16T12:00:00.000Z',
@@ -1123,7 +1117,7 @@ updatePreview();`
     id: 'app-cyber-clock',
     name: 'Cyberpunk Neon Analog Clock & Stopwatch',
     description: 'Stylized glowing neon analog clock with precision lap stopwatch and glowing CSS SVG hands.',
-    category: 'css-art',
+    category: 'creative-arts',
     tags: ['css-art', 'neon', 'clock', 'stopwatch', 'cyberpunk'],
     author: 'CSS Artists',
     createdAt: '2026-08-15T09:00:00.000Z',
