@@ -1,9 +1,9 @@
 import type { Category, WebApp, AppFilter } from '../types/app';
 import { INITIAL_CATEGORIES, INITIAL_APPS } from './seedData';
 
-const APPS_STORAGE_KEY = 'difinest_web_apps_v1';
-const CATEGORIES_STORAGE_KEY = 'difinest_categories_v1';
-const FAVORITES_STORAGE_KEY = 'difinest_favorite_apps_v1';
+const APPS_STORAGE_KEY = 'difinest_web_apps_v2';
+const CATEGORIES_STORAGE_KEY = 'difinest_categories_v2';
+const FAVORITES_STORAGE_KEY = 'difinest_favorite_apps_v2';
 const ADMIN_TOKEN_KEY = 'difinest_admin_token_v1';
 
 export class StorageService {
