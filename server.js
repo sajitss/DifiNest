@@ -26,11 +26,12 @@ app.use(express.json({ limit: '50mb' }));
 // 1. Serve individual static files of each uploaded app directly at /apps/:appId/
 app.use('/apps', express.static(APPS_DIR));
 
-// Helper: Read apps from disk
+// Helper: Read apps from disk (auto-seeds defaults if volume is empty)
 function getStoredApps() {
   try {
     if (fs.existsSync(DB_FILE)) {
-      return JSON.parse(fs.readFileSync(DB_FILE, 'utf-8'));
+      const data = JSON.parse(fs.readFileSync(DB_FILE, 'utf-8'));
+      if (Array.isArray(data) && data.length > 0) return data;
     }
   } catch (err) {
     console.error('Error reading apps.json:', err);

@@ -1,0 +1,17 @@
+services:
+  difinest:
+    image: sajitss/difinest:latest
+    container_name: difinest-app
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    environment:
+      - PORT=80
+      - DATA_DIR=/app/data
+    volumes:
+      # Persistent Volume Mapping: All uploaded static apps & database files are stored here
+      - difinest_data:/app/data
+
+volumes:
+  difinest_data:
+    name: difinest_data
