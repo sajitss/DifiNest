@@ -32,10 +32,17 @@ export default function App() {
   });
 
   // Load initial data and resolve URL route
-  const checkUrlRoute = useCallback(() => {
+  const checkUrlRoute = useCallback(async () => {
     const path = window.location.pathname.replace(/^\/+|\/+$/g, '').trim();
     if (path) {
-      const matched = StorageService.getAppBySlugOrId(path);
+      // First check local storage cache
+      let matched = StorageService.getAppBySlugOrId(path);
+      
+      // If not in local storage cache (e.g. first visit from mobile/direct link), fetch from backend
+      if (!matched) {
+        matched = await StorageService.fetchAppBySlugOrId(path);
+      }
+
       if (matched) {
         StorageService.incrementViewCount(matched.id);
         setActivePlayroomApp(matched);
@@ -54,6 +61,15 @@ export default function App() {
     const serverApps = await StorageService.fetchApps();
     setCategories(serverCategories);
     setApps(serverApps);
+
+    // Re-check URL route after server catalog loads in case app was just fetched
+    const path = window.location.pathname.replace(/^\/+|\/+$/g, '').trim();
+    if (path) {
+      const matched = StorageService.getAppBySlugOrId(path);
+      if (matched) {
+        setActivePlayroomApp(matched);
+      }
+    }
   }, []);
 
   // Check saved admin status on mount

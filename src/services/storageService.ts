@@ -214,6 +214,33 @@ export class StorageService {
     });
   }
 
+  public static async fetchAppBySlugOrId(identifier: string): Promise<WebApp | undefined> {
+    if (!identifier) return undefined;
+    const localMatch = this.getAppBySlugOrId(identifier);
+    if (localMatch) return localMatch;
+
+    try {
+      const clean = identifier.toLowerCase().replace(/^\/+|\/+$/g, '').trim();
+      const res = await fetch(`/api/apps/${encodeURIComponent(clean)}`);
+      if (res.ok) {
+        const app = await res.json();
+        if (app && app.id) {
+          // Cache into local apps so it's instantly available
+          const apps = this.getApps();
+          const exists = apps.some(a => a.id === app.id);
+          if (!exists) {
+            apps.unshift(app);
+            localStorage.setItem(APPS_STORAGE_KEY, JSON.stringify(apps));
+          }
+          return app;
+        }
+      }
+    } catch {
+      // Offline / fallback
+    }
+    return undefined;
+  }
+
   public static incrementViewCount(id: string): void {
     const apps = this.getApps();
     const app = apps.find(a => a.id === id);
